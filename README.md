@@ -60,7 +60,7 @@
 
 - 🐙 GitHub: [github.com/Vishalmani-11](https://github.com/Vishalmani-11)
 - 🌐 Website: [Vishalmani-11.github.io](https://Vishalmani-11.github.io)
-- 🟩 HackTheBox: [app.hackthebox.com/profile/YOURID](https://app.hackthebox.com/profile/YOURID)
+- 🟩 HackTheBox: [https://app.hackthebox.com/users/2521841](https://app.hackthebox.com/users/2521841)
 
 ---
 
