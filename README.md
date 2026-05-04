@@ -18,7 +18,7 @@
 
 | Machine | OS | Topics Covered | Write-up |
 |---------|-----|----------------|----------|
-| MonitorFour|Windows|- Docker API Abuse - WSL2 Pivoting - Windows Host Compromise|[Read ->] (HackTheBox/Medium/monitorfour.md) |
+| MonitorFour|Windows|- Docker API Abuse - WSL2 Pivoting - Windows Host Compromise|[Read ->](HackTheBox/Medium/monitorfour.md) |
 
 ---
 
