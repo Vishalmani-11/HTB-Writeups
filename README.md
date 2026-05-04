@@ -10,7 +10,7 @@
 | Machine | OS | Topics Covered | Write-up |
 |---------|-----|----------------|----------|
 | Facts | Linux | Mass Assignment, Path Traversal, Sudo Misconfiguration | [Read →](HackTheBox/Easy/Facts.md) |
-| 2Million | Linux | JS Reverse Engineering, API Exploitation, CVE-2023-0386 | [Read →](HackTheBox/Easy/2Million.md) |
+
 
 ---
 
@@ -18,7 +18,7 @@
 
 | Machine | OS | Topics Covered | Write-up |
 |---------|-----|----------------|----------|
-| Coming soon... | — | — | — |
+| MonitorFour|Windows|- Docker API Abuse - WSL2 Pivoting - Windows Host Compromise|[Read ->] (HackTheBox/Medium/monitorfour.md) |
 
 ---
 
