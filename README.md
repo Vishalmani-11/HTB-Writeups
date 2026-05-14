@@ -19,7 +19,7 @@
 | Machine | OS | Topics Covered | Write-up |
 |---------|-----|----------------|----------|
 | MonitorFour|Windows|- Docker API Abuse - WSL2 Pivoting - Windows Host Compromise|[Read ->](HackTheBox/Medium/monitorfour.md) |
-
+| Helix| Linux | Exploited CVE-2023-34468 for RCE,Pivoted from nifi → operator ,Learned OPC UA|[Read->]{HackTheBox/Medium/Helix.md}| 
 ---
 
 ## 🔴 HackTheBox — Hard
