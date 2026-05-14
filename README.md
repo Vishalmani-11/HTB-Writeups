@@ -8,10 +8,11 @@
 ## 🟢 HackTheBox — Easy
 
 | Machine | OS | Topics Covered | Write-up |
-|---------|-----|----------------|----------|
+|----------|------|-----------------------------|----------|
 | Facts | Linux | Mass Assignment, Path Traversal, Sudo Misconfiguration | [Read →](HackTheBox/Easy/Facts.md) |
-
-
+| Cap | Linux | Network Traffic Analysis, Credential Reuse, Linux PrivEsc | [Read →](HackTheBox/Easy/Cap.md) |
+| CCTV | Linux | Web Enumeration, Credential Discovery, Privilege Escalation | [Read →](HackTheBox/Easy/CCTV.md) |
+| WingData | Linux | Wing FTP RCE, Null Byte Injection, Hash Cracking, PrivEsc | [Read →](HackTheBox/Easy/WingData.md) |
 ---
 
 ## 🟡 HackTheBox — Medium
@@ -37,17 +38,15 @@
 | Coming soon... | — | — | — |
 
 ---
-
 ## 📊 Stats
 
 | Category | Count |
-|----------|-------|
-| 🟢 Easy boxes | 5 |
-| 🟡 Medium boxes | 1 |
+|-----------|--------|
+| 🟢 Easy boxes | 4 |
+| 🟡 Medium boxes | 2 |
 | 🔴 Hard boxes | 0 |
 | 🏁 CTF challenges | 0 |
-| **Total** | **2** |
-
+| **Total** | **6** |
 ---
 
 ## 🛠️ Tools I Use
