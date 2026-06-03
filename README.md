@@ -8,14 +8,14 @@
 
 | Machine | OS | Topics Covered | Write-up |
 |---|---|---|---|
-| Reactor | Linux | Coming soon | [Read →](HackTheBox/Easy/Reactor.md) |
-| Kobold | Linux | Coming soon | [Read →](HackTheBox/Easy/Kobold.md) |
+| Reactor | Linux | Next.js RSC Command Injection, Privilege Escalation | [Read →](HackTheBox/Easy/Reactor.md) |
+| Kobold | Linux | Subdomain Enum, CVE-2026-23520 MCP Command Injection, Docker Group PrivEsc | [Read →](HackTheBox/Easy/Kobold.md) |
 | CCTV | Linux | Web Enumeration, Credential Discovery, Privilege Escalation | [Read →](HackTheBox/Easy/CCTV.md) |
 | WingData | Linux | Wing FTP RCE, Null Byte Injection, Hash Cracking, PrivEsc | [Read →](HackTheBox/Easy/WingData.md) |
 | Facts | Linux | Mass Assignment, Path Traversal, Sudo Misconfiguration | [Read →](HackTheBox/Easy/Facts.md) |
-| MonitorsFour | Windows | Docker API Abuse, WSL2 Pivoting, Windows Host Compromise | [Read →](HackTheBox/Easy/MonitorsFour.md) |
-| TwoMillion | Linux | API Enumeration, Kernel Exploit (CVE-2023-0386) | [Read →](HackTheBox/Easy/TwoMillion.md) |
-| Support | Windows | LDAP Enumeration, Kerberos Delegation, BloodHound | [Read →](HackTheBox/Easy/Support.md) |
+| MonitorsFour | Windows | IDOR, MD5 Hash Cracking, CVE-2025-24367 Cacti RCE, CVE-2025-9074 Docker Escape | [Read →](HackTheBox/Easy/MonitorsFour.md) |
+| TwoMillion | Linux | JS Reverse Engineering, API Abuse, Command Injection, CVE-2023-0386 Kernel Exploit | [Read →](HackTheBox/Easy/TwoMillion.md) |
+| Support | Windows | SMB Anonymous Auth, .NET Reversing, LDAP Enum, WinRM, BloodHound, RBCD Attack | [Read →](HackTheBox/Easy/Support.md) |
 | Cap | Linux | Network Traffic Analysis, Credential Reuse, Linux PrivEsc | [Read →](HackTheBox/Easy/Cap.md) |
 
 ---
