@@ -32,8 +32,8 @@
 ## 🔴 HackTheBox — Hard
 
 | Machine | OS | Topics Covered | Write-up |
-|---|---|---|---|
-| Coming soon... | — | — | — |
+|----------|---------|----------------|----------|
+| NanoCorp | Windows (Active Directory) | SMB Enumeration, LDAP Enumeration, NTLM Hash Capture, Password Cracking, BloodHound Analysis, ACL Abuse (AddSelf), ForceChangePassword Abuse, Kerberos Authentication, Evil-WinRM, Active Directory Privilege Escalation, CheckMK LPE Research | [Read ->](HackTheBox/Hard/NanoCorp) |
 
 ---
 
