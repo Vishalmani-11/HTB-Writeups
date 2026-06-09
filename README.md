@@ -53,7 +53,7 @@
 | 🟡 Medium boxes | 2 |
 | 🔴 Hard boxes | 1 |
 | 🏁 CTF challenges | 0 |
-| **Total** | **11** |
+| **Total** | **12** |
 
 ---
 
