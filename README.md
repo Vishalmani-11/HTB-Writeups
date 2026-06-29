@@ -17,6 +17,7 @@
 | TwoMillion | Linux | JS Reverse Engineering, API Abuse, Command Injection, CVE-2023-0386 Kernel Exploit | [Read →](HackTheBox/Easy/TwoMillion.md) |
 | Support | Windows | SMB Anonymous Auth, .NET Reversing, LDAP Enum, WinRM, BloodHound, RBCD Attack | [Read →](HackTheBox/Easy/Support.md) |
 | Cap | Linux | Network Traffic Analysis, Credential Reuse, Linux PrivEsc | [Read →](HackTheBox/Easy/Cap.md) |
+| Orion| Linux | Craft CMS Enumeration, CVE-2025-32432 Pre-Auth RCE | [Read ->](HackTheBox/Easy/Orion_Writeup.md)|
 
 ---
 
