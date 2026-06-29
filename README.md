@@ -50,11 +50,11 @@
 
 | Category | Count |
 |---|---|
-| 🟢 Easy boxes | 9 |
+| 🟢 Easy boxes | 10 |
 | 🟡 Medium boxes | 2 |
 | 🔴 Hard boxes | 1 |
 | 🏁 CTF challenges | 0 |
-| **Total** | **12** |
+| **Total** | **13** |
 
 ---
 
