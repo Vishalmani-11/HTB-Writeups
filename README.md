@@ -27,6 +27,7 @@
 |---|---|---|---|
 | DevHub | Linux | Coming soon | [Read →](HackTheBox/Medium/DevHub.md) |
 | Helix | Linux | CVE-2023-34468 RCE, NiFi Pivoting, OPC UA | [Read →](HackTheBox/Medium/Helix.md) |
+| MakeSense| Linux | CVE-2015-9357 - stored XSS , Plugin-RCE| [Read ->](HackTheBox/Medium/MakeSense.md)
 
 ---
 
