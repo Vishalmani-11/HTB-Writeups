@@ -1,3 +1,5 @@
+# BlockSynergy HTB-Box Writeup
+```text
 BLOCKSYNERGY — DETAILED TECHNICAL WRITE-UP
 =============================================
 
@@ -1497,3 +1499,4 @@ The machine also reinforced an important methodology:
     exploit only after understanding the trust boundary
 
 END OF TECHNICAL WRITE-UP
+```
