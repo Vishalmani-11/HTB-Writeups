@@ -17,7 +17,8 @@
 | TwoMillion | Linux | JS Reverse Engineering, API Abuse, Command Injection, CVE-2023-0386 Kernel Exploit | [Read →](HackTheBox/Easy/TwoMillion.md) |
 | Support | Windows | SMB Anonymous Auth, .NET Reversing, LDAP Enum, WinRM, BloodHound, RBCD Attack | [Read →](HackTheBox/Easy/Support.md) |
 | Cap | Linux | Network Traffic Analysis, Credential Reuse, Linux PrivEsc | [Read →](HackTheBox/Easy/Cap.md) |
-| Orion| Linux | Craft CMS Enumeration, CVE-2025-32432 Pre-Auth RCE | [Read ->](HackTheBox/Easy/Orion_Writeup.md)|
+| Orion | Linux | Craft CMS Enumeration, CVE-2025-32432 Pre-Auth RCE | [Read →](HackTheBox/Easy/Orion_Writeup.md) |
+| Paperwork | Linux | Web Enumeration, Application Exploitation, Privilege Escalation | [Read →](HackTheBox/Easy/Paperwork_writeup.md) |
 
 ---
 
@@ -27,7 +28,10 @@
 |---|---|---|---|
 | DevHub | Linux | Coming soon | [Read →](HackTheBox/Medium/DevHub.md) |
 | Helix | Linux | CVE-2023-34468 RCE, NiFi Pivoting, OPC UA | [Read →](HackTheBox/Medium/Helix.md) |
-| MakeSense| Linux | CVE-2015-9357 - stored XSS , Plugin-RCE| [Read ->](HackTheBox/Medium/MakeSense.md)
+| MakeSense | Linux | CVE-2015-9357 - stored XSS, Plugin-RCE | [Read →](HackTheBox/Medium/MakeSense.md) |
+| BedSide | Linux | Web Enumeration, Exploitation, Privilege Escalation | [Read →](HackTheBox/Medium/BedSide_report.txt) |
+| DanglingTree | Windows | Active Directory Enumeration, Authentication, Privilege Escalation | [Read →](HackTheBox/Medium/Danglingtree_Writeup.md) |
+| Logging | Windows | Active Directory, Authentication Abuse, Privilege Escalation | [Read →](HackTheBox/Medium/Logging_report.txt) |
 
 ---
 
@@ -35,7 +39,17 @@
 
 | Machine | OS | Topics Covered | Write-up |
 |----------|---------|----------------|----------|
-| NanoCorp | Windows (Active Directory) | SMB Enumeration, LDAP Enumeration, NTLM Hash Capture, Password Cracking, BloodHound Analysis, ACL Abuse (AddSelf), ForceChangePassword Abuse, Kerberos Authentication, Evil-WinRM, Active Directory Privilege Escalation, CheckMK LPE Research | [Read ->](HackTheBox/Hard/NanoCorp) |
+| NanoCorp | Windows (Active Directory) | SMB Enumeration, LDAP Enumeration, NTLM Hash Capture, Password Cracking, BloodHound Analysis, ACL Abuse (AddSelf), ForceChangePassword Abuse, Kerberos Authentication, Evil-WinRM, Active Directory Privilege Escalation, CheckMK LPE Research | [Read →](HackTheBox/Hard/NanoCorp_Report.md) |
+| Garfield | Windows (Active Directory) | Active Directory Enumeration, Logon Script Abuse, RODC, RBCD, Kerberos, Privilege Escalation | [Read →](HackTheBox/Hard/garfiled_halfcompleted_report.txt) |
+| DarkZeroReturns | Linux | Web Exploitation, Pivoting, Privilege Escalation | [Read →](HackTheBox/Hard/DarkZeroReturns_Writeup.md) |
+
+---
+
+## 💀 HackTheBox — Insane
+
+| Machine | OS | Topics Covered | Write-up |
+|----------|---------|----------------|----------|
+| BlockSynergy | Linux | Advanced Web/Blockchain Security, Complex Attack Chain, Privilege Escalation | [Read →](HackTheBox/Insane/BlockSynergy.txt) |
 
 ---
 
@@ -51,11 +65,12 @@
 
 | Category | Count |
 |---|---|
-| 🟢 Easy boxes | 10 |
-| 🟡 Medium boxes | 2 |
-| 🔴 Hard boxes | 1 |
+| 🟢 Easy boxes | 11 |
+| 🟡 Medium boxes | 6 |
+| 🔴 Hard boxes | 3 |
+| 💀 Insane boxes | 1 |
 | 🏁 CTF challenges | 0 |
-| **Total** | **13** |
+| **Total** | **21** |
 
 ---
 
