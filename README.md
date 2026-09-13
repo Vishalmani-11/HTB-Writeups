@@ -40,7 +40,7 @@
 | Machine | OS | Topics Covered | Write-up |
 |----------|---------|----------------|----------|
 | NanoCorp | Windows (Active Directory) | SMB Enumeration, LDAP Enumeration, NTLM Hash Capture, Password Cracking, BloodHound Analysis, ACL Abuse (AddSelf), ForceChangePassword Abuse, Kerberos Authentication, Evil-WinRM, Active Directory Privilege Escalation, CheckMK LPE Research | [Read →](HackTheBox/Hard/NanoCorp/NanoCorp_Report.md) |
-| Garfield | Windows (Active Directory) | Active Directory Enumeration, Logon Script Abuse, RODC, RBCD, Kerberos, Privilege Escalation | [Read →](HackTheBox/Hard/garfiled_halfcompleted_report.txt) |
+| Garfield | Windows (Active Directory) | Active Directory Enumeration, Logon Script Abuse, RODC, RBCD, Kerberos, Privilege Escalation | [Read →](HackTheBox/Hard/garfiled_halfcompleted_report.md) |
 | DarkZeroReturns | Linux | Web Exploitation, Pivoting, Privilege Escalation | [Read →](HackTheBox/Hard/DarkZeroReturns_Writeup.md) |
 
 ---
