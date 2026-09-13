@@ -49,9 +49,15 @@
 
 | Machine | OS | Topics Covered | Write-up |
 |----------|---------|----------------|----------|
-| BlockSynergy | Linux | Advanced Web/Blockchain Security, Complex Attack Chain, Privilege Escalation | [Read →](HackTheBox/Insane/BlockSynergy.txt) |
+| BlockSynergy | Linux | Advanced Web/Blockchain Security, Complex Attack Chain, Privilege Escalation | [Read →](HackTheBox/Insane/BlockSynergy.md) |
 
 ---
+
+## 🏰 HackTheBox — Fortresses
+
+| Fortress | Topics Covered | Write-up |
+|---|---|---|
+| Akerva | Web Enumeration, Exploitation, Privilege Escalation, Active Directory | [Read →](HackTheBox/Fortresses/Akerva_reports.md) |
 
 ## 🏁 CTF Challenges
 
