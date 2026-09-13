@@ -75,8 +75,9 @@
 | 🟡 Medium boxes | 6 |
 | 🔴 Hard boxes | 3 |
 | 💀 Insane boxes | 1 |
+| 🏰 Fortresses | 1 | 
 | 🏁 CTF challenges | 0 |
-| **Total** | **21** |
+| **Total** | **22** |
 
 ---
 
