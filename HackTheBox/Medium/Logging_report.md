@@ -1,5 +1,5 @@
-HTB Simple Personal Report — Logging
-
+# HTB Simple Personal Report — Logging
+```text
 
 Machine: Logging
 OS: Windows (Active Directory)
@@ -111,3 +111,4 @@ Limited logon type
 - Logs = goldmine for credentials
 - Service accounts may not allow normal login
 - Always read logs carefully
+```
