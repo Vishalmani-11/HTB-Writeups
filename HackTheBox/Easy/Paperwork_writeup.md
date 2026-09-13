@@ -1,5 +1,6 @@
-HTB Paperwork – Technical Walkthrough
+# HTB Paperwork – Technical Walkthrough
 
+```text
 ================================================================================
 1. INITIAL ENUMERATION
 ================================================================================
@@ -283,4 +284,5 @@ Unix Socket Analysis → recvmsg() → SCM_RIGHTS leak
 Read ADMIN_PASSWORD from leaked FD
                     │
                     ▼
-su root → Root Flag
+        su root → Root Flag
+```
