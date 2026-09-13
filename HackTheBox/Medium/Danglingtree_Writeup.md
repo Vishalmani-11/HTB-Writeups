@@ -1,3 +1,5 @@
+# DanglingTree HTB-Box Writeup 
+```text
 DANGLINGTREE – COMPLETE TECHNICAL PENETRATION TEST / HTB REPORT
 
 Assessment Type: Hack The Box / Authorized CTF Lab
@@ -484,3 +486,4 @@ The source material documents the AD CS sequence of creating the
 template, granting enrollment permissions, requesting an Administrator
 certificate, and authenticating with the resulting PFX. See the supplied
 writeup for that sequence.
+```
