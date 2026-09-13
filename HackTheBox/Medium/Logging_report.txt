@@ -1,0 +1,113 @@
+HTB Simple Personal Report — Logging
+
+
+Machine: Logging
+OS: Windows (Active Directory)
+Difficulty: Unknown (New Box)
+Date: 21-04-2026
+Status: In Progress
+
+From Nmap:
+
+- Domain Controller: DC01.logging.htb
+- Services:
+  - 80 → IIS Web Server
+  - 88 → Kerberos
+  - 389 → LDAP
+  - 445 → SMB
+  - 5985 → WinRM
+
+Gobuster enumeration we found : 
+
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+aspnet_client        (Status: 301) [Size: 156] [--> http://logging.htb/aspnet_client/]
+dns-query?dns=q80BAAABAAAAAAAAA3d3dwdleGFtcGxlA2NvbQAAAQAB (Status: 400) [Size: 3420]
+Progress: 4750 / 4750 (100.00%)
+
+
+This is a full Active Directory environment
+Attack path = AD abuse + credentials
+
+
+Username: wallace.everette
+Password: Welcome2026@
+Result:
+
+SMB → ✅ Working
+WinRM → ❌ No access
+
+
+
+Shares found:
+
+- Logs (READ)  ← IMPORTANT
+- SYSVOL (READ)
+- NETLOGON (READ)
+
+
+
+Box name = "Logging" → Logs share is the main entry point
+
+
+
+Total files: 9
+Main files:
+- IdentitySync_Trace_20260219.log  ← MOST IMPORTANT
+🚨 Critical Finding
+
+From logs:
+
+BindUser: LOGGING\svc_recovery
+BindPass: Em3rg3ncyPa$$2025
+
+👉 This is a credential leak from logs
+
+
+svc_recovery results:
+SMB → STATUS_ACCOUNT_RESTRICTION
+WinRM → Failed
+LDAP → Failed
+
+👉 Conclusion:
+
+Password is correct
+But account has login restrictions
+Likely:
+Service account
+Limited logon type
+
+🧠 Key Observations
+- Logs contain sensitive credentials → bad logging practice
+- Service accounts behave differently (restricted login)
+- WinRM not accessible → need another path
+
+🎯 Current Attack Path
+1. Initial creds (wallace)
+2. SMB access → Logs share
+3. Found svc_recovery credentials
+4. svc_recovery restricted → cannot login normally
+
+🧠 Hypothesis (IMPORTANT)
+- svc_recovery is a service account
+- Might be usable for:
+  → Kerberos attacks (Kerberoasting)
+  → DCSync (if privileged)
+  → Service abuse
+
+❌ Mistakes / Time Waste
+- Tried WinRM too early
+- Didn’t focus Logs immediately
+
+🔁 Next Steps (THIS IS WHAT YOU WANTED)
+1. Try Kerberoasting with svc_recovery
+2. Try secretsdump (DCSync attempt)
+3. Enumerate AD users deeply
+4. Check if svc_recovery has special privileges
+5. Investigate web app (port 80)
+
+🧠 What I Learned
+- Logs = goldmine for credentials
+- Service accounts may not allow normal login
+- Always read logs carefully
