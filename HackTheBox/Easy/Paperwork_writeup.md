@@ -1,5 +1,5 @@
-HTB Paperwork – Technical Walkthrough
-
+#HTB Paperwork – Technical Walkthrough
+'''text
 ================================================================================
 1. INITIAL ENUMERATION
 ================================================================================
@@ -284,3 +284,4 @@ Read ADMIN_PASSWORD from leaked FD
                     │
                     ▼
 su root → Root Flag
+'''
